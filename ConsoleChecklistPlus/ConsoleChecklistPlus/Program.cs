@@ -2,12 +2,13 @@
 using ConsoleChecklistPlus;
 using System.Text.Json;
 
+string version = "1.1.0R";
 Console.ForegroundColor = ConsoleColor.White;
-Console.WriteLine("ConsoleChecklist Plus - Version 1.0.0R");
+Console.WriteLine($"ConsoleChecklist Plus - Version: {version}");
 Console.ForegroundColor = ConsoleColor.DarkGray;
 Console.WriteLine("Загрузка...");
 
-int tasksCreated = 0;
+bool parseA = false;
 int selectedTask = 0;
 int pinnedTask = 0;
 string selectedTaskPre;
@@ -15,17 +16,18 @@ string newTaskName;
 string newTaskDescription;
 int newTaskPriority = 0;
 string answer;
-List<CCPTask> TaskN = new List<CCPTask>();
 string jsonString;
+List<CCPTask> TaskN = new List<CCPTask>();
 
-string fileName = "CCPSave.txt";
-jsonString = File.ReadAllText(fileName);
-if (jsonString == null)
-{ }
-else
+if (File.Exists("CCPSave.txt") == true)
 {
+    string fileName = "CCPSave.txt";
+    jsonString = File.ReadAllText(fileName);
     TaskN = JsonSerializer.Deserialize<List<CCPTask>>(jsonString)!;
-    tasksCreated = TaskN.Count;
+    }
+else 
+{
+    Console.WriteLine("Файл с сохранением не обнаружен");
 }
 
 void Menu() //Меню
@@ -34,9 +36,8 @@ void Menu() //Меню
     Console.ForegroundColor = ConsoleColor.Cyan;
     Console.WriteLine("╚ Console Checklist Plus | Меню");
     Console.WriteLine();
-    if (pinnedTask == 0)
-    { }
-    else
+
+    if (pinnedTask != 0)
     {
         Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine("----------------------------------------------");
@@ -60,12 +61,13 @@ void Menu() //Меню
         Console.WriteLine("----------------------------------------------");
         Console.WriteLine();
     }
+
     Console.WriteLine();
     Console.ForegroundColor = ConsoleColor.DarkGray;
     Console.WriteLine("═ Выберите действие:");
     Console.ForegroundColor = ConsoleColor.Yellow;
     Console.WriteLine("» 1 - Создать новую задачу");
-    if (tasksCreated == 0)
+    if (TaskN.Count == 0)
     {
         Console.ForegroundColor = ConsoleColor.DarkYellow;
         Console.WriteLine("» 2 - Посмотреть все задачи (Сначала создайте задачи)");
@@ -121,7 +123,7 @@ void MenuSA() //Выбор действия в меню
         case "5":
             Console.Clear();
             Console.WriteLine("Console Ckecklist Plus");
-            Console.WriteLine("Version: 1.0.0R");
+            Console.WriteLine($"Version: {version}");
             Console.ReadLine();
             Menu();
             break;
@@ -163,15 +165,24 @@ void TaskCreate() //Создание задач
     Console.ForegroundColor = ConsoleColor.Yellow;
     Console.Write("Приоритет: ");
     Console.ForegroundColor = ConsoleColor.Magenta;
+
+    for (parseA == true)
+    if (int.TryParse(Console.ReadLine(), out newTaskPriority))
+    {
+        parseA = false;
+    }
+    else
+    { 
+    
+    }
     newTaskPriority = int.Parse(Console.ReadLine());
 
-    tasksCreated++;
-    TaskN.Add(new CCPTask(tasksCreated, newTaskName, newTaskDescription, false, newTaskPriority));
+    TaskN.Add(new CCPTask(TaskN.Count, newTaskName, newTaskDescription, false, newTaskPriority));
 
     Console.Clear();
     Console.ForegroundColor = ConsoleColor.Green;
     Console.WriteLine();
-    Console.WriteLine($"Задача [{TaskN[tasksCreated-1].Name}] успешно создана!");
+    Console.WriteLine($"Задача [{TaskN[TaskN.Count-1].Name}] успешно создана!");
     Console.ReadLine();
     Menu();
 }
@@ -183,10 +194,10 @@ void ViewTasks() //Просмотр всех задач
     Console.WriteLine("╚ Ваши задачи:");
     Console.WriteLine();
 
-    if (tasksCreated == 0)
+    if (TaskN.Count == 0)
     { Menu(); }
 
-    for (int i = 0; i < tasksCreated; i++)
+    for (int i = 0; i < TaskN.Count; i++)
     {
         Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine("----------------------------------------------");
@@ -226,7 +237,7 @@ void TaskSelect()
     else
     { selectedTask = int.Parse(selectedTaskPre); }
 
-    if (selectedTask > tasksCreated)
+    if (selectedTask > TaskN.Count)
     { TaskSelect(); }
     if (selectedTask < 0)
     { TaskSelect(); }
@@ -309,7 +320,6 @@ void TaskAct() //Действие с задачей
             break;
         case "3": //Удалить задачу
             TaskN.RemoveAt(selectedTask-1);
-            tasksCreated--;
             ViewTasks();
             break;
         case "4":
