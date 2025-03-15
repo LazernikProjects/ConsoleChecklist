@@ -252,6 +252,7 @@ void TaskAct() //Действие с задачей
             Console.WriteLine("Задача закреплена!");
             Console.ReadLine();
             ViewTasks();
+            //test
             break;
         case "x": //Выйти
             ViewTasks();
