@@ -1,0 +1,8 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/ConsoleChecklistPlus/.vs
+/ConsoleChecklistPlus/ConsoleChecklistPlus/bin/Debug/net9.0
+/ConsoleChecklistPlus/ConsoleChecklistPlus/obj
+/ConsoleChecklistPlus/ConsoleChecklistPlus/bin/Release/net9.0
