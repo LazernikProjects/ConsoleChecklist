@@ -1,5 +1,4 @@
-﻿
-using ConsoleChecklistPlus;
+﻿using ConsoleChecklistPlus;
 using System.Text.Json;
 
 string version = "1.1.0R";
@@ -8,7 +7,6 @@ Console.WriteLine($"ConsoleChecklist Plus - Version: {version}");
 Console.ForegroundColor = ConsoleColor.DarkGray;
 Console.WriteLine("Загрузка...");
 
-bool parseA = false;
 int selectedTask = 0;
 int pinnedTask = 0;
 string selectedTaskPre;
@@ -24,10 +22,18 @@ if (File.Exists("CCPSave.txt") == true)
     string fileName = "CCPSave.txt";
     jsonString = File.ReadAllText(fileName);
     TaskN = JsonSerializer.Deserialize<List<CCPTask>>(jsonString)!;
+    if (TaskN.Count == 0)
+    {
+        Console.WriteLine("Файл с сохранением найден, но он ничего не содержит (сохранение не загружено)");
     }
+    else
+    {
+        Console.WriteLine("Файл с сохранением найден, сохранение загружено");
+    }
+}
 else 
 {
-    Console.WriteLine("Файл с сохранением не обнаружен");
+    Console.WriteLine("Файл сохранения не найден");
 }
 
 void Menu() //Меню
@@ -42,12 +48,12 @@ void Menu() //Меню
         Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine("----------------------------------------------");
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"Закреплено - {TaskN[pinnedTask - 1].Name}");
+        Console.WriteLine($"Закреплено - {TaskN[pinnedTask].Name}");
         Console.ForegroundColor = ConsoleColor.Gray;
-        Console.WriteLine(TaskN[pinnedTask - 1].Description);
+        Console.WriteLine(TaskN[pinnedTask].Description);
         Console.ForegroundColor = ConsoleColor.Magenta;
-        Console.WriteLine($"Приоритет: {TaskN[pinnedTask - 1].Priority}");
-        if (TaskN[pinnedTask-1].State == true)
+        Console.WriteLine($"Приоритет: {TaskN[pinnedTask].Priority}");
+        if (TaskN[pinnedTask].State == true)
         {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Задача выполнена!");
@@ -166,16 +172,22 @@ void TaskCreate() //Создание задач
     Console.Write("Приоритет: ");
     Console.ForegroundColor = ConsoleColor.Magenta;
 
-    for (parseA == true)
-    if (int.TryParse(Console.ReadLine(), out newTaskPriority))
+    for (int parseA = 0; parseA < 1;)
     {
-        parseA = false;
+        if (int.TryParse(Console.ReadLine(), out newTaskPriority))
+        {
+            parseA = 1;
+        }
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine("Неверное значение! Введите число");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write("Приоритет: ");
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            parseA = 0;
+        }
     }
-    else
-    { 
-    
-    }
-    newTaskPriority = int.Parse(Console.ReadLine());
 
     TaskN.Add(new CCPTask(TaskN.Count, newTaskName, newTaskDescription, false, newTaskPriority));
 
@@ -224,25 +236,53 @@ void ViewTasks() //Просмотр всех задач
     TaskSelect();
 }
 
-void TaskSelect()
+void TaskSelect() //Выбор задачи
 {
     Console.ForegroundColor = ConsoleColor.DarkGray;
     Console.WriteLine("Выберите задачу (x - выйти)");
 
     Console.ForegroundColor = ConsoleColor.White;
-    selectedTaskPre = Console.ReadLine();
 
-    if (selectedTaskPre == "x")
-    { Menu(); }
-    else
-    { selectedTask = int.Parse(selectedTaskPre); }
+    for (int parseA = 0; parseA < 1;)
+    {
+        selectedTaskPre = Console.ReadLine();
+        if (selectedTaskPre == "x")
+        {
+            Console.Clear();
+            Menu();
+            break;
+        }
+        if (int.TryParse(selectedTaskPre, out selectedTask))
+        {
+            parseA = 1;
+            selectedTask--;
+        }
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine("Неверное значение! Введите число");
+            Console.ForegroundColor = ConsoleColor.White;
+            parseA = 0;
+        }
+        
+    }
 
     if (selectedTask > TaskN.Count)
-    { TaskSelect(); }
-    if (selectedTask < 0)
-    { TaskSelect(); }
+    {
+        Console.ForegroundColor = ConsoleColor.DarkRed;
+        Console.WriteLine("Задача не найдена");
+        TaskSelect(); 
+    }
+    if (selectedTask < 1)
+    {
+        Console.ForegroundColor = ConsoleColor.DarkRed;
+        Console.WriteLine("Задача не найдена");
+        TaskSelect(); 
+    }
     else
-    { TaskAct(); }
+    {
+        TaskAct(); 
+    }
 }
 
 void TaskAct() //Действие с задачей
@@ -260,10 +300,10 @@ void TaskAct() //Действие с задачей
     switch (answer)
     {
         case "1": //Изменить состояние
-            if (TaskN[selectedTask - 1].State == true)
-            { TaskN[selectedTask - 1].State = false; }
+            if (TaskN[selectedTask].State == true)
+            { TaskN[selectedTask].State = false; }
             else
-            { TaskN[selectedTask - 1].State = true; }
+            { TaskN[selectedTask].State = true; }
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Успешно!");
             Console.ReadLine();
@@ -273,7 +313,7 @@ void TaskAct() //Действие с задачей
             Console.Clear();
 
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine($"╚ Изменить задачу {TaskN[selectedTask - 1].Name}");
+            Console.WriteLine($"╚ Изменить задачу {TaskN[selectedTask].Name}");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("Введите новое имя для задачи: (если не надо изменять то введите 'skip')");
             Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -285,7 +325,7 @@ void TaskAct() //Действие с задачей
             if (answer == "skip")
             { }
             else
-            { TaskN[selectedTask -1].Name = answer; }
+            { TaskN[selectedTask].Name = answer; }
 
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.White;
@@ -293,13 +333,13 @@ void TaskAct() //Действие с задачей
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.WriteLine("-------------------------------------------------");
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write("Новое имя: ");
+            Console.Write("Новое описание: ");
             Console.ForegroundColor = ConsoleColor.Yellow;
             answer = Console.ReadLine();
             if (answer == "skip")
             { }
             else
-            { TaskN[selectedTask-1].Description = answer; }
+            { TaskN[selectedTask].Description = answer; }
 
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.White;
@@ -310,7 +350,7 @@ void TaskAct() //Действие с задачей
             Console.Write("Приоритет: ");
             Console.ForegroundColor = ConsoleColor.Magenta;
             answer = Console.ReadLine();
-            TaskN[selectedTask - 1].Priority = int.Parse(answer);
+            TaskN[selectedTask].Priority = int.Parse(answer);
 
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Green;
@@ -319,7 +359,7 @@ void TaskAct() //Действие с задачей
             ViewTasks();
             break;
         case "3": //Удалить задачу
-            TaskN.RemoveAt(selectedTask-1);
+            TaskN.RemoveAt(selectedTask);
             ViewTasks();
             break;
         case "4":
