@@ -1,2 +1,2 @@
 Console Checklist Plus
-Version: 1.0.0R
+Version: 1.1.0R
